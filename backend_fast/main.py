@@ -68,15 +68,16 @@ async def analyze_resume_and_jd(resume: UploadFile = File(...), jd: UploadFile =
             tasks=[comparison_task]
         )
         comparison_result = comparison_crew.kickoff().raw
-        print(type(comparison_result),comparison_result)
         comparison_result=json.loads(comparison_result)
         print(f"\n✅ DEBUG: Comparison Result:")
-        print(type(comparison_result),comparison_result)
+        print(json.dumps(comparison_result, indent=4))
 
         # Step 2: Research missing skills
-        missing_skills = comparison_result.get('missing_skills', {}).get('resume',[]) + comparison_result.get('missing', {}).get('jd',[])
+        missing_skills = comparison_result.get('missing_skills', {}).get('resume',[]) + comparison_result.get('missing_skills', {}).get('jd',[])
         print(f"\n🔍 DEBUG: Missing Skills: {missing_skills}")
+        # missing_skills=['GoLang', 'Computer algorithms', 'Operating system', 'graph theory', 'Machine learning concepts', 'Modelling pipeline', 'Natural language processing', 'MLOps', 'Fine-tuning and training NLP or Graph ML models', 'SQL', 'R', 'PyTorch', 'TensorFlow', 'Keras', 'NumPy', 'Pandas', 'Scikit-learn', 'Garak', 'Langchain', 'Stable-Baselines', 'OpenCV', 'NL TK', 'Git', 'Docker']
 
+        missing_skills=['GoLang', 'Computer algorithms','NL TK', 'Git', 'Docker'] #save serper credits
         if missing_skills:
             print("\n🔄 DEBUG: Creating research task")
             research_task = create_research_task(missing_skills)

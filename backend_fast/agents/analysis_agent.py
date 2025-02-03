@@ -18,32 +18,61 @@ analysis_agent = Agent(
     llm=f"azure/{deployment_name}"
 )
 
-def create_analysis_task(resume, jd, use_cases):
+def create_analysis_task(missing_skills, use_cases):
     print('Creating analysis task')
     return Task(
         description=(
-            f"Analyze the following use cases:\n{use_cases}\n\n"
-            f"Compare them with the candidate's resume skills:\n{resume['skills']}\n"
-            f"Determine if the candidate’s current skills are relevant to these use cases even if they don’t exactly match the job description.\n"
-            f"Generate a score from 0-100 based on the skill alignment and provide actionable feedback."
+            f"Here's a mapping of tech to it's use cases:\n{use_cases}\n\n"
+            f"Here's a list of skills that were mismatched : {missing_skills}\n"
+            f"Determine if the candidate’s current skills are similar to any of the Job Description(JD) skills are return them as feedback asking the user to upgrade user's skill to the one mentioned in Job Description.\n"
+            f"Generate a score from 0-100 based on the skill alignment and return feedback only if some skills are similar between the ones mismatched based on the use case mapping suggesting for upgrades."
         ),
         expected_output="Strictly return a JSON with 'score'(score (0-100)) and 'feedback'( a list of feedback suggestions for the candidate.)",
         agent=analysis_agent
     )
 
 if __name__ == "__main__":
-    resume_mock = {
-        "skills": {"tech": ["Python", "SQL"], "behav": ["Teamwork"]}
-    }
-    jd_mock = {
-        "skills": {"tech": {"required": ["Python", "GoLang", "SQL"], "preferred": ["TensorFlow"]}}
-    }
+    missing_skills = {"resume":['javascript','NLTK', 'Git', 'Docker'],"jd":['typescript','GoLang', 'Computer algorithms']}
+
     use_cases_mock = {
-        "GoLang": ["Backend for microservices", "Concurrency handling", "Cloud applications"],
-        "MLFlow": ["Model tracking", "Pipeline automation", "Experiment management"]
+        "GoLang": [
+            "Building scalable microservices",
+            "Efficient concurrency handling",
+            "Developing cloud-native applications"
+        ],
+        "Computer algorithms": [
+            "Optimizing search and sort operations",
+            "Solving complex computational problems",
+            "Enhancing data processing efficiency"
+        ],
+        "NLTK": [
+            "Text tokenization and preprocessing",
+            "Sentiment analysis on large datasets",
+            "Named Entity Recognition (NER)"
+        ],
+        "Git": [
+            "Version control for collaborative development",
+            "Managing code repositories in CI/CD pipelines",
+            "Tracking and reverting code changes efficiently"
+        ],
+        "Docker": [
+            "Containerizing applications for portability",
+            "Automating deployment in cloud environments",
+            "Simplifying DevOps workflows with container orchestration"
+        ],
+        "JavaScript": [
+            "Developing interactive web applications",
+            "Creating dynamic user interfaces",
+            "Building full-stack applications with Node.js"
+        ],
+        "TypeScript": [
+            "Enhancing JavaScript code with static typing",
+            "Developing large-scale, maintainable applications",
+            "Improving code reliability and refactoring efficiency"
+        ]
     }
 
-    task = create_analysis_task(resume_mock, jd_mock, use_cases_mock)
+    task = create_analysis_task(missing_skills, use_cases_mock)
     crew = Crew(agents=[analysis_agent], tasks=[task])  # ✅ Crew Setup
     result = crew.kickoff()
 
