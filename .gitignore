@@ -4,3 +4,8 @@ frontend/node_modules
 .idea/
 resumetailor/
 backend_fast/__pycache__/
+backend_fast/.env
+config/
+backend_fast/modules/
+backend_fast/llm_test.py
+backend_fast/tools.py
