@@ -24,10 +24,19 @@ def create_analysis_task(missing_skills, use_cases):
         description=(
             f"Here's a mapping of tech to it's use cases:\n{use_cases}\n\n"
             f"Here's a list of skills that were mismatched : {missing_skills}\n"
-            f"Determine if the candidate’s current skills are similar to any of the Job Description(JD) skills are return them as feedback asking the user to upgrade user's skill to the one mentioned in Job Description.\n"
-            f"Generate a score from 0-100 based on the skill alignment and return feedback only if some skills are similar between the ones mismatched based on the use case mapping suggesting for upgrades."
+            f"Determine if the candidate's current skills are similar to any of the Job Description(JD) skills and return them as feedback asking the user to upgrade user's skill to the one mentioned in Job Description.\n"
+            f"Generate a DICTIONARY(NO EXTRA SENTENCES) with score from 0-100 based on the skill alignment and return feedback ONLY IF some skills are similar between the ones mismatched based on the use case mapping suggesting for upgrades.\n\n"
+            f"IMPORTANT: Return ONLY a valid JSON object with exactly this structure:\n"
+            f'''{{
+                "score": <integer between 0-100>,
+                "feedback": [
+                    "Upgrade your skill in '<current_skill>' to <target_skill" as they are used for <commonality in use cases>"
+                ]
+            }}'''
+            f"\n\nExample output:\n"
+            '''{"score":10,"feedback": ["Upgrade your skill in 'GoLang' as it will help you in 'Building scalable microservices', 'Efficient concurrency handling', and 'Developing cloud-native applications'","Learn 'TypeScript'. It adds to 'Enhancing JavaScript code with static typing', 'Developing Large-scale, maintainable applications', and 'Improving code reliability and refactoring efficiency'"]}'''
         ),
-        expected_output='Strictly return a JSON with "score"(score (0-100)) and "feedback"( a list of suggestions for the candidate.), ensure the properties are enclose in double quotes',
+        expected_output="A JSON object with 'score' (integer) and 'feedback' (array of strings) keys, NO EXTRA content before or after",
         agent=analysis_agent
     )
 

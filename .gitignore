@@ -9,3 +9,4 @@ config/
 backend_fast/modules/
 backend_fast/llm_test.py
 backend_fast/tools.py
+test_resumes_and_JDs/

@@ -11,6 +11,9 @@ from modules.parser import ParserFactory
 from agents.comparison_agent import create_comparison_task,comparison_agent
 from agents.research_agent import create_research_task,research_agent
 from agents.analysis_agent import create_analysis_task,analysis_agent
+from agents.resume_gen_agent import create_resume_gen_task, resume_gen_agent, parse_generated_resume
+import re
+
 from crewai import Crew, Process
 
 app = FastAPI()
@@ -130,7 +133,13 @@ async def analyze_resume_and_jd(resume: UploadFile = File(...), jd: UploadFile =
             tasks=[analysis_task]
         )
         print("\n🚀 DEBUG: Running analysis crew")
-        analysis_result = json.loads(analysis_crew.kickoff().raw)
+        analysis_result = analysis_crew.kickoff().raw
+        analysis_result=re.search(r'\{.*\}', analysis_result, re.DOTALL)
+        if analysis_result:
+            analysis_result=json.loads(analysis_result.group())
+        else:
+            analysis_result={"error": "Invalid analysis result format"}
+
         print(f"\n✅ DEBUG: Analysis Result:")
         print(json.dumps(analysis_result, indent=2))
 
@@ -165,29 +174,36 @@ async def analyze_resume_and_jd(resume: UploadFile = File(...), jd: UploadFile =
 # Generate a resume based on the feedbacks
 @app.post("/generate_resume")
 async def generate_resume(feedbacks: str=Form(...), resume: UploadFile = File(...), jd: UploadFile = File(...)):
-    # Here you would process the feedback and generate a tailored resume
-    parsed_feedbacks = [Feedback(**item) for item in json.loads(feedbacks)]
-    #CODE parser for resume and jd
-    resume_content = await resume.read()
-    jd_content = await jd.read()
-    print(parsed_feedbacks)
+    try:
+        # Parse feedbacks
+        parsed_feedbacks = json.loads(feedbacks)
+        accepted_feedbacks = [f for f in parsed_feedbacks if f.get('accepted')]
 
-    # Simulate the resume generation
-    mock_resume = f"""
-    # Resume Tailored to Job Description
+        # Initialize parsers just for text extraction
+        resume_parser = ParserFactory.get_parser("resume")
+        jd_parser = ParserFactory.get_parser("jd")
 
-    ### Summary
-    - Metrics added to achievements.
-    - Relevant keywords incorporated.
+        # Get raw content and extract text from PDFs
+        resume_content = resume_parser.extract_text(await resume.read())
+        jd_content = jd_parser.extract_text(await jd.read())
 
-    ### Skills
-    - Leadership roles emphasized.
-    - Expanded technical skills.
+        print("\n📄 DEBUG: Extracted Resume Content:")
+        print(resume_content)
+        print("\n📄 DEBUG: Extracted JD Content:")
+        print(jd_content)
+        print("\n✅ DEBUG: Accepted Feedbacks:")
+        print(json.dumps(accepted_feedbacks, indent=2))
 
-    ### Certifications
-    - Added recent certifications.
+        # Generate optimized resume
+        task = create_resume_gen_task(resume_content, jd_content, accepted_feedbacks)
+        crew = Crew(agents=[resume_gen_agent], tasks=[task])
+        result = crew.kickoff()
 
-    ---
-    Generated using Resume Tailor. Score: 85 
-    """
-    return {"resume": mock_resume}
+        # Parse and format the result
+        formatted_resume = parse_generated_resume(result)
+
+        return {"resume": formatted_resume}
+
+    except Exception as e:
+        print(f"\n❌ DEBUG: Error generating resume: {str(e)}")
+        return {"error": str(e)}, 400
