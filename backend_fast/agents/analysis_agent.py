@@ -27,7 +27,7 @@ def create_analysis_task(missing_skills, use_cases):
             f"Determine if the candidate’s current skills are similar to any of the Job Description(JD) skills are return them as feedback asking the user to upgrade user's skill to the one mentioned in Job Description.\n"
             f"Generate a score from 0-100 based on the skill alignment and return feedback only if some skills are similar between the ones mismatched based on the use case mapping suggesting for upgrades."
         ),
-        expected_output="Strictly return a JSON with 'score'(score (0-100)) and 'feedback'( a list of feedback suggestions for the candidate.)",
+        expected_output='Strictly return a JSON with "score"(score (0-100)) and "feedback"( a list of suggestions for the candidate.), ensure the properties are enclose in double quotes',
         agent=analysis_agent
     )
 
@@ -39,16 +39,6 @@ if __name__ == "__main__":
             "Building scalable microservices",
             "Efficient concurrency handling",
             "Developing cloud-native applications"
-        ],
-        "Computer algorithms": [
-            "Optimizing search and sort operations",
-            "Solving complex computational problems",
-            "Enhancing data processing efficiency"
-        ],
-        "NLTK": [
-            "Text tokenization and preprocessing",
-            "Sentiment analysis on large datasets",
-            "Named Entity Recognition (NER)"
         ],
         "Git": [
             "Version control for collaborative development",

@@ -56,7 +56,7 @@ def create_comparison_task(resume, jd):
             f"Job Description: {jd.get('skills', {}).get('tech', {}).get('required', [])}\n\n"
             f"Strictly return only a Dictionary (NO EXTRA SENTENCES) of all technical skills that are mismatched in the resume and JD(with the keys being 'resume' and 'jd'), and another dictionary of matches."
         ),
-        expected_output='{"matched_skills": [], "missing_skills": {"resume":[], "jd":[]}}',
+        expected_output='A JSON of the form :{"matched_skills":[],"missing_skills":{"resume":[],"jd":[]}}',
         agent=comparison_agent,
     )
 if __name__ == "__main__":

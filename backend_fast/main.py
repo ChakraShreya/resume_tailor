@@ -68,33 +68,63 @@ async def analyze_resume_and_jd(resume: UploadFile = File(...), jd: UploadFile =
             tasks=[comparison_task]
         )
         comparison_result = comparison_crew.kickoff().raw
+        print(comparison_result)
         comparison_result=json.loads(comparison_result)
         print(f"\n✅ DEBUG: Comparison Result:")
         print(json.dumps(comparison_result, indent=4))
 
+        #save serper
+        comparison_result={"matched_skills":["Python","Java"],"missing_skills":{"resume":['javascript', 'Git', 'Docker'],"jd":['typescript','GoLang']}}
         # Step 2: Research missing skills
-        missing_skills = comparison_result.get('missing_skills', {}).get('resume',[]) + comparison_result.get('missing_skills', {}).get('jd',[])
-        print(f"\n🔍 DEBUG: Missing Skills: {missing_skills}")
-        # missing_skills=['GoLang', 'Computer algorithms', 'Operating system', 'graph theory', 'Machine learning concepts', 'Modelling pipeline', 'Natural language processing', 'MLOps', 'Fine-tuning and training NLP or Graph ML models', 'SQL', 'R', 'PyTorch', 'TensorFlow', 'Keras', 'NumPy', 'Pandas', 'Scikit-learn', 'Garak', 'Langchain', 'Stable-Baselines', 'OpenCV', 'NL TK', 'Git', 'Docker']
+        missing_skills_list = comparison_result.get('missing_skills', {}).get('resume',[]) + comparison_result.get('missing_skills', {}).get('jd',[])
+        print(f"\n🔍 DEBUG: Missing Skills: {missing_skills_list}")
 
-        missing_skills=['GoLang', 'Computer algorithms','NL TK', 'Git', 'Docker'] #save serper credits
-        if missing_skills:
-            print("\n🔄 DEBUG: Creating research task")
-            research_task = create_research_task(missing_skills)
-            research_crew = Crew(
-                agents=[research_agent],
-                tasks=[research_task]
-            )
-            use_cases = json.loads(research_crew.kickoff().raw)
-            print(f"\n✅ DEBUG: Research Results:")
-            print(json.dumps(use_cases, indent=2))
-        else:
-            use_cases = {}
-            print("\n📝 DEBUG: No missing skills to research")
+        # if missing_skills_list:
+        #     print("\n🔄 DEBUG: Creating research task")
+        #     research_task = create_research_task(missing_skills_list)
+        #     research_crew = Crew(
+        #         agents=[research_agent],
+        #         tasks=[research_task]
+        #     )
+        #     use_cases = json.loads(research_crew.kickoff().raw)
+        #     print(f"\n✅ DEBUG: Research Results:")
+        #     print(json.dumps(use_cases, indent=2))
+        # else:
+        #     use_cases = {}
+        #     print("\n📝 DEBUG: No missing skills to research")
+
+        # save serper
+        use_cases={
+            "javascript": [
+                "Used for website front-end development.",
+                "Applied in creating in-browser games.",
+                "Implemented on NodeJS for backend web frameworks."
+            ],
+            "Git": [
+                "Utilized for managing multiple branches with diverging codebases.",
+                "Used to track and manage changes to source code and text files.",
+                "Allows teams to work together using the same files."
+            ],
+            "Docker": [
+                "Used for creating a consistent environment for deploying applications.",
+                "Employed for faster configuration with consistency.",
+                "Used for better disaster recovery."
+            ],
+            "typescript": [
+                "Utilized for backend web development.",
+                "Used in mobile applications development.",
+                "Implemented in library or framework development to provide clear interfaces."
+            ],
+            "GoLang": [
+                "Used for cross-platform desktop apps development.",
+                "Implemented for low-level networking.",
+                "Applied in server-side apps and in various web services."
+            ]
+        }
 
         # Step 3: Analyze alignment
         print("\n🔄 DEBUG: Creating analysis task")
-        analysis_task = create_analysis_task(resume_json, jd_json, use_cases)
+        analysis_task = create_analysis_task(comparison_result.get('missing_skills',[]), use_cases)
         analysis_crew = Crew(
             agents=[analysis_agent],
             tasks=[analysis_task]
