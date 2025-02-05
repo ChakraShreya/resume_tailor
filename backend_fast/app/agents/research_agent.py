@@ -1,7 +1,7 @@
 import os
 from crewai import Agent, Task,Crew
 from crewai_tools import SerperDevTool
-from config.config import (AZURE_OPENAI_API_KEY,AZURE_OPENAI_ENDPOINT,AZURE_DEPLOYMENT_NAME,AZURE_API_VERSION)
+from ..config.config import (AZURE_OPENAI_API_KEY,AZURE_OPENAI_ENDPOINT,AZURE_DEPLOYMENT_NAME,AZURE_API_VERSION)
 
 os.environ["AZURE_API_BASE"] = AZURE_OPENAI_ENDPOINT
 os.environ["AZURE_DEPLOYMENT_NAME"] = AZURE_DEPLOYMENT_NAME

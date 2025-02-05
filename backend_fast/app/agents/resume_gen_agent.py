@@ -1,5 +1,5 @@
 from crewai import Agent, Task, Crew
-from config.config import (AZURE_OPENAI_ENDPOINT, AZURE_DEPLOYMENT_NAME, AZURE_API_VERSION)
+from ..config.config import (AZURE_OPENAI_ENDPOINT, AZURE_DEPLOYMENT_NAME, AZURE_API_VERSION)
 import os
 import json
 
@@ -143,6 +143,92 @@ if __name__ == "__main__":
         print(formatted_resume)
 
         # Save to file
+        with open("generated_resume.md", "w") as f:
+            f.write(formatted_resume)
+        print("\nResume saved to generated_resume.md")
+
+    except Exception as e:
+        print(f"Error generating resume: {e}")
+
+if __name__ == "__main__":
+    resume_mock = """
+    John Doe
+    john@example.com | 123-456-7890
+
+    SUMMARY
+    Experienced software developer with 5 years in web development
+
+    TECHNICAL SKILLS
+    - Languages: Python, JavaScript, SQL
+    - Frameworks: React, Django
+    - Tools: Git, VS Code
+
+    EXPERIENCE
+
+    Senior Developer | Tech Corp | 2020-Present
+    - Led team of 5 developers in developing full-stack web applications
+    - Implemented CI/CD pipeline reducing deployment time by 40%
+    - Developed RESTful APIs using Python and JavaScript
+
+    Software Developer | StartUp Inc | 2018-2020
+    - Built responsive web applications using React and Node.js
+    - Optimized database queries improving performance by 30%
+
+    EDUCATION
+    BS in Computer Science | Tech University | 2018
+    """
+
+    jd_mock = """
+    Senior Software Engineer
+
+    We are seeking a Senior Software Engineer to join our growing team.
+
+    Required Skills:
+    - Python
+    - TypeScript
+    - SQL
+    - AWS
+    - Microservices architecture
+
+    Preferred Skills:
+    - Docker
+    - Kubernetes
+    - CI/CD experience
+
+    Responsibilities:
+    - Design and implement scalable software solutions
+    - Lead technical projects and mentor junior developers
+    - Collaborate with cross-functional teams
+    """
+
+    accepted_feedbacks_mock = [
+        {
+            "id": 1,
+            "text": "Upgrade JavaScript skills to TypeScript for better alignment with the role",
+            "accepted": True
+        },
+        {
+            "id": 2,
+            "text": "Add Docker and AWS to technical skills section",
+            "accepted": True
+        },
+        {
+            "id": 3,
+            "text": "Highlight microservices experience in work history",
+            "accepted": True
+        }
+    ]
+
+    try:
+        task = create_resume_gen_task(resume_mock, jd_mock, accepted_feedbacks_mock)
+        crew = Crew(agents=[resume_gen_agent], tasks=[task])
+        result = crew.kickoff()
+
+        formatted_resume = parse_generated_resume(result)
+
+        print("\n=== Generated Resume ===\n")
+        print(formatted_resume)
+
         with open("generated_resume.md", "w") as f:
             f.write(formatted_resume)
         print("\nResume saved to generated_resume.md")

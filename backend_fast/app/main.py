@@ -1,20 +1,18 @@
 from fastapi import FastAPI, UploadFile, File, Form
 from pydantic import BaseModel
 from typing import List
-import io
 from fastapi.middleware.cors import CORSMiddleware
 import json
 # import PyPDF2
 # from docx import Document
-import numpy as np
-from modules.parser import ParserFactory
-from agents.comparison_agent import create_comparison_task,comparison_agent
-from agents.research_agent import create_research_task,research_agent
-from agents.analysis_agent import create_analysis_task,analysis_agent
-from agents.resume_gen_agent import create_resume_gen_task, resume_gen_agent, parse_generated_resume
+from .modules.parser import ParserFactory
+from .agents.comparison_agent import create_comparison_task,comparison_agent
+from .agents.research_agent import create_research_task,research_agent
+from .agents.analysis_agent import create_analysis_task,analysis_agent
+from .agents.resume_gen_agent import create_resume_gen_task, resume_gen_agent, parse_generated_resume
 import re
 
-from crewai import Crew, Process
+from crewai import Crew
 
 app = FastAPI()
 app.add_middleware(
@@ -171,6 +169,8 @@ async def analyze_resume_and_jd(resume: UploadFile = File(...), jd: UploadFile =
     except Exception as e:
         return {"error": str(e)}, 400
 
+def filter_accepted_feedbacks(parsed_feedbacks: List[dict]) -> List[dict]:
+    return [f for f in parsed_feedbacks if f.get('accepted')]
 
 # Generate a resume based on the feedbacks
 @app.post("/generate_resume")
@@ -178,7 +178,7 @@ async def generate_resume(feedbacks: str=Form(...), resume: UploadFile = File(..
     try:
         # Parse feedbacks
         parsed_feedbacks = json.loads(feedbacks)
-        accepted_feedbacks = [f for f in parsed_feedbacks if f.get('accepted')]
+        accepted_feedbacks = filter_accepted_feedbacks(parsed_feedbacks)
 
         # Initialize parsers just for text extraction
         resume_parser = ParserFactory.get_parser("resume")

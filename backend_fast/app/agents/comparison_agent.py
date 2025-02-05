@@ -1,5 +1,5 @@
 from crewai import Agent, Task,Crew
-from config.config import (AZURE_OPENAI_ENDPOINT,AZURE_DEPLOYMENT_NAME,AZURE_API_VERSION)
+from ..config.config import (AZURE_OPENAI_ENDPOINT,AZURE_DEPLOYMENT_NAME,AZURE_API_VERSION)
 import os
 import json
 # import litellm

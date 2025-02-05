@@ -4,9 +4,11 @@ frontend/node_modules
 .idea/
 resumetailor/
 backend_fast/__pycache__/
-backend_fast/.env
+backend_fast/app/.env
 config/
-backend_fast/modules/
+backend_fast/app/modules/
 backend_fast/llm_test.py
 backend_fast/tools.py
 test_resumes_and_JDs/
+.DS_Store
+__pycache__
