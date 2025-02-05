@@ -18,13 +18,15 @@ analysis_agent = Agent(
     llm=f"azure/{deployment_name}"
 )
 
-def create_analysis_task(missing_skills, use_cases):
+def create_analysis_task(skills, use_cases):
     print('Creating analysis task')
     return Task(
         description=(
             f"Here's a mapping of tech to it's use cases:\n{use_cases}\n\n"
-            f"Here's a list of skills that were mismatched : {missing_skills}\n"
-            f"Determine if the candidate's current skills are similar to any of the Job Description(JD) skills and return them as feedback asking the user to upgrade user's skill to the one mentioned in Job Description.\n"
+            f"Here's a list of all the skills that were matched : {skills["matched_skills"]}\n"
+            f"Here's a list of skills that were mismatched : {skills["missing_skills"]}\n"
+            f"Analyze the matched skills and the degree of similarity between the mismatched skills to generate a score between 0-100."
+            f"Look carefully at the mismatched skills to determine if the candidate's current skills are similar to any of the Job Description(JD) skills and return them as feedback asking the user to upgrade user's skill to the one mentioned in Job Description.\n"
             f"Generate a DICTIONARY(NO EXTRA SENTENCES) with score from 0-100 based on the skill alignment and return feedback ONLY IF some skills are similar between the ones mismatched based on the use case mapping suggesting for upgrades.\n\n"
             f"IMPORTANT: Return ONLY a valid JSON object with exactly this structure:\n"
             f'''{{
@@ -41,7 +43,7 @@ def create_analysis_task(missing_skills, use_cases):
     )
 
 if __name__ == "__main__":
-    missing_skills = {"resume":['javascript','NLTK', 'Git', 'Docker'],"jd":['typescript','GoLang', 'Computer algorithms']}
+    skills = {"matched_skills":["python","aws"],"missing_skills":{"resume":['javascript','NLTK', 'Git', 'Docker'],"jd":['typescript','GoLang', 'Computer algorithms']}}
 
     use_cases_mock = {
         "GoLang": [
@@ -71,7 +73,7 @@ if __name__ == "__main__":
         ]
     }
 
-    task = create_analysis_task(missing_skills, use_cases_mock)
+    task = create_analysis_task(skills, use_cases_mock)
     crew = Crew(agents=[analysis_agent], tasks=[task])  # ✅ Crew Setup
     result = crew.kickoff()
 

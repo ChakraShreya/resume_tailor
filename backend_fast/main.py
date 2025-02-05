@@ -77,57 +77,58 @@ async def analyze_resume_and_jd(resume: UploadFile = File(...), jd: UploadFile =
         print(json.dumps(comparison_result, indent=4))
 
         #save serper
-        comparison_result={"matched_skills":["Python","Java"],"missing_skills":{"resume":['javascript', 'Git', 'Docker'],"jd":['typescript','GoLang']}}
+        # comparison_result={"matched_skills":["Python","Java"],"missing_skills":{"resume":['javascript', 'Git', 'Docker'],"jd":['typescript','GoLang']}}
+
         # Step 2: Research missing skills
         missing_skills_list = comparison_result.get('missing_skills', {}).get('resume',[]) + comparison_result.get('missing_skills', {}).get('jd',[])
         print(f"\n🔍 DEBUG: Missing Skills: {missing_skills_list}")
-
-        # if missing_skills_list:
-        #     print("\n🔄 DEBUG: Creating research task")
-        #     research_task = create_research_task(missing_skills_list)
-        #     research_crew = Crew(
-        #         agents=[research_agent],
-        #         tasks=[research_task]
-        #     )
-        #     use_cases = json.loads(research_crew.kickoff().raw)
-        #     print(f"\n✅ DEBUG: Research Results:")
-        #     print(json.dumps(use_cases, indent=2))
-        # else:
-        #     use_cases = {}
-        #     print("\n📝 DEBUG: No missing skills to research")
+        # missing_skills_list= None #save serper
+        if missing_skills_list:
+            print("\n🔄 DEBUG: Creating research task")
+            research_task = create_research_task(missing_skills_list)
+            research_crew = Crew(
+                agents=[research_agent],
+                tasks=[research_task]
+            )
+            use_cases = json.loads(research_crew.kickoff().raw)
+            print(f"\n✅ DEBUG: Research Results:")
+            print(json.dumps(use_cases, indent=2))
+        else:
+            use_cases = {}
+            print("\n📝 DEBUG: No missing skills to research")
 
         # save serper
-        use_cases={
-            "javascript": [
-                "Used for website front-end development.",
-                "Applied in creating in-browser games.",
-                "Implemented on NodeJS for backend web frameworks."
-            ],
-            "Git": [
-                "Utilized for managing multiple branches with diverging codebases.",
-                "Used to track and manage changes to source code and text files.",
-                "Allows teams to work together using the same files."
-            ],
-            "Docker": [
-                "Used for creating a consistent environment for deploying applications.",
-                "Employed for faster configuration with consistency.",
-                "Used for better disaster recovery."
-            ],
-            "typescript": [
-                "Utilized for backend web development.",
-                "Used in mobile applications development.",
-                "Implemented in library or framework development to provide clear interfaces."
-            ],
-            "GoLang": [
-                "Used for cross-platform desktop apps development.",
-                "Implemented for low-level networking.",
-                "Applied in server-side apps and in various web services."
-            ]
-        }
+        # use_cases={
+        #     "javascript": [
+        #         "Used for website front-end development.",
+        #         "Applied in creating in-browser games.",
+        #         "Implemented on NodeJS for backend web frameworks."
+        #     ],
+        #     "Git": [
+        #         "Utilized for managing multiple branches with diverging codebases.",
+        #         "Used to track and manage changes to source code and text files.",
+        #         "Allows teams to work together using the same files."
+        #     ],
+        #     "Docker": [
+        #         "Used for creating a consistent environment for deploying applications.",
+        #         "Employed for faster configuration with consistency.",
+        #         "Used for better disaster recovery."
+        #     ],
+        #     "typescript": [
+        #         "Utilized for backend web development.",
+        #         "Used in mobile applications development.",
+        #         "Implemented in library or framework development to provide clear interfaces."
+        #     ],
+        #     "GoLang": [
+        #         "Used for cross-platform desktop apps development.",
+        #         "Implemented for low-level networking.",
+        #         "Applied in server-side apps and in various web services."
+        #     ]
+        # }
 
         # Step 3: Analyze alignment
         print("\n🔄 DEBUG: Creating analysis task")
-        analysis_task = create_analysis_task(comparison_result.get('missing_skills',[]), use_cases)
+        analysis_task = create_analysis_task(comparison_result, use_cases)
         analysis_crew = Crew(
             agents=[analysis_agent],
             tasks=[analysis_task]

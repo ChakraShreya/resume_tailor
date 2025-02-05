@@ -70,7 +70,7 @@ class ResumeParser(BaseParser):
             }}
         }}
         Only include factual information present in the resume.
-
+        If there are skills like "React and Node" mentioned in a point make sure to seperate it in the list as each a string.
         Example output:
         {{
             "qualifications": [
@@ -120,7 +120,8 @@ class JDParser(BaseParser):
             }}
         }}
         Only include factual information present in the job description.
-
+        If there are skills like "React and Node" or "Typescript/JavaScript" mentioned in a point make sure to seperate it in the list as each a string.
+        If there are phrases like "understanding of data structures" or "experience with react.js and redux" extract it as "data structures","react.js","redux". Eliminate these extra words like "understanding of" or "experience in"
         Example output:
         {{
             "qualifications": [

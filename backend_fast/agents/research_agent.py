@@ -25,7 +25,7 @@ def create_research_task(missing_skills):
     print("Creating research task...")
     return Task(
         description=(
-            f"For each of the following missing technical skills, search online for the top 3 real-world use cases:\n"
+            f"For each of the following skills listed below, search online for what it is and the top 2 uses in software development:\n"
             f"{', '.join(missing_skills)}\n"
             f"Summarize each use case in one concise line."
         ),
