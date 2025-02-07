@@ -11,9 +11,11 @@ from .agents.research_agent import create_research_task,research_agent
 from .agents.analysis_agent import create_analysis_task,analysis_agent
 from .agents.resume_gen_agent import create_resume_gen_task, resume_gen_agent, parse_generated_resume
 import re
-
+import asyncio
 from crewai import Crew
 
+from fastapi.responses import StreamingResponse
+from asyncio import Queue
 app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
@@ -22,6 +24,15 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+process_logs = []
+
+def log_step(step: str):
+    global process_logs
+    process_logs.append(step)
+    # print(f"🔄 log_step: {step}")
+    # print("log_step ",process_logs)
+
 
 feedback_store=[]
 
@@ -38,8 +49,12 @@ class Feedback(BaseModel):
 
 @app.post("/analyze")
 async def analyze_resume_and_jd(resume: UploadFile = File(...), jd: UploadFile = File(...)):
+    global process_logs
+    process_logs = []
     try:
         # Step 1: Parse resume and JD
+        log_step("Parsing")
+
         resume_parser = ParserFactory.get_parser("resume")
         jd_parser = ParserFactory.get_parser("jd")
 
@@ -49,98 +64,116 @@ async def analyze_resume_and_jd(resume: UploadFile = File(...), jd: UploadFile =
 
         jd_content = await jd.read()
         jd_json = await jd_parser.parse_to_json(jd_content)
+
+        log_step("Parsing complete")
         print(jd_json)
 
-        print("\n🔄 DEBUG: Creating comparison task")
+        log_step("Creating comparison task")
         comparison_task = create_comparison_task(resume_json, jd_json)
 
-        print("\n🔍 DEBUG: Extracted Skills:")
-        print(f"Resume Skills: {resume_json.get('skills', {}).get('tech', [])}")
-        print(f"JD Required Skills: {jd_json.get('skills', {}).get('tech', {}).get('required', [])}")
-        print(f"JD Preferred Skills: {jd_json.get('skills', {}).get('tech', {}).get('preferred', [])}")
-
         if not comparison_task:
-            print("\n❌ DEBUG: Failed to create comparison task")
+            log_step("Error: Failed to create comparison task.")
             return {"error": "Invalid resume or job description format"}, 400
 
-        print("\n🚀 DEBUG: Running comparison crew")
+        log_step("Running comparison agent")
         comparison_crew = Crew(
             agents=[comparison_agent],
-            tasks=[comparison_task]
+            tasks=[comparison_task],
+            async_mode=True
         )
-        comparison_result = comparison_crew.kickoff().raw
+        comparison_result = await comparison_crew.kickoff_async()
+
+        print("\n\n\n\n")
+        print(type(comparison_result))
         print(comparison_result)
-        comparison_result=json.loads(comparison_result)
-        print(f"\n✅ DEBUG: Comparison Result:")
-        print(json.dumps(comparison_result, indent=4))
+        print("\n\n\n\n")
+
+        comparison_result=json.loads(comparison_result.raw)
+        log_step("Comparison completed")
+        print("comparison result: ",json.dumps(comparison_result, indent=4))
 
         #save serper
         # comparison_result={"matched_skills":["Python","Java"],"missing_skills":{"resume":['javascript', 'Git', 'Docker'],"jd":['typescript','GoLang']}}
 
         # Step 2: Research missing skills
         missing_skills_list = comparison_result.get('missing_skills', {}).get('resume',[]) + comparison_result.get('missing_skills', {}).get('jd',[])
+        log_step(f"Identified mismatched skills: {comparison_result.get('missing_skills', {})}")
         print(f"\n🔍 DEBUG: Missing Skills: {missing_skills_list}")
         # missing_skills_list= None #save serper
         if missing_skills_list:
-            print("\n🔄 DEBUG: Creating research task")
+            log_step("Creating research task")
             research_task = create_research_task(missing_skills_list)
             research_crew = Crew(
                 agents=[research_agent],
-                tasks=[research_task]
+                tasks=[research_task],
+                async_mode=True
             )
-            use_cases = json.loads(research_crew.kickoff().raw)
-            print(f"\n✅ DEBUG: Research Results:")
+            # use_cases = await research_crew.kickoff_async()
+            # use_cases=json.loads(use_cases.raw)
+
+            # save serper
+            use_cases={
+                "javascript": [
+                    "Used for website front-end development.",
+                    "Applied in creating in-browser games.",
+                    "Implemented on NodeJS for backend web frameworks."
+                ],
+                "Git": [
+                    "Utilized for managing multiple branches with diverging codebases.",
+                    "Used to track and manage changes to source code and text files.",
+                    "Allows teams to work together using the same files."
+                ],
+                "Docker": [
+                    "Used for creating a consistent environment for deploying applications.",
+                    "Employed for faster configuration with consistency.",
+                    "Used for better disaster recovery."
+                ],
+                "typescript": [
+                    "Utilized for backend web development.",
+                    "Used in mobile applications development.",
+                    "Implemented in library or framework development to provide clear interfaces."
+                ],
+                "GoLang": [
+                    "Used for cross-platform desktop apps development.",
+                    "Implemented for low-level networking.",
+                    "Applied in server-side apps and in various web services."
+                ]
+            }
+
+            log_step("Research completed")
+            log_step(f"Use Cases : {use_cases}")
             print(json.dumps(use_cases, indent=2))
         else:
             use_cases = {}
-            print("\n📝 DEBUG: No missing skills to research")
+            log_step("No missing skills to research")
 
-        # save serper
-        # use_cases={
-        #     "javascript": [
-        #         "Used for website front-end development.",
-        #         "Applied in creating in-browser games.",
-        #         "Implemented on NodeJS for backend web frameworks."
-        #     ],
-        #     "Git": [
-        #         "Utilized for managing multiple branches with diverging codebases.",
-        #         "Used to track and manage changes to source code and text files.",
-        #         "Allows teams to work together using the same files."
-        #     ],
-        #     "Docker": [
-        #         "Used for creating a consistent environment for deploying applications.",
-        #         "Employed for faster configuration with consistency.",
-        #         "Used for better disaster recovery."
-        #     ],
-        #     "typescript": [
-        #         "Utilized for backend web development.",
-        #         "Used in mobile applications development.",
-        #         "Implemented in library or framework development to provide clear interfaces."
-        #     ],
-        #     "GoLang": [
-        #         "Used for cross-platform desktop apps development.",
-        #         "Implemented for low-level networking.",
-        #         "Applied in server-side apps and in various web services."
-        #     ]
-        # }
+
 
         # Step 3: Analyze alignment
-        print("\n🔄 DEBUG: Creating analysis task")
+        log_step("Creating analysis task")
         analysis_task = create_analysis_task(comparison_result, use_cases)
         analysis_crew = Crew(
             agents=[analysis_agent],
-            tasks=[analysis_task]
+            tasks=[analysis_task],
+            async_mode=True
         )
-        print("\n🚀 DEBUG: Running analysis crew")
-        analysis_result = analysis_crew.kickoff().raw
+        log_step("Running analysis agent")
+        analysis_result = await analysis_crew.kickoff_async()
+        analysis_result=analysis_result.raw
+
+        print("\n\n\n\n")
+        print(analysis_result)
+        print("\n\n\n\n")
+
         analysis_result=re.search(r'\{.*\}', analysis_result, re.DOTALL)
         if analysis_result:
             analysis_result=json.loads(analysis_result.group())
         else:
             analysis_result={"error": "Invalid analysis result format"}
 
-        print(f"\n✅ DEBUG: Analysis Result:")
-        print(json.dumps(analysis_result, indent=2))
+        log_step("Analysis completed.")
+
+        print("analysis result:",json.dumps(analysis_result, indent=2))
 
         # Format response
         try:
@@ -152,11 +185,13 @@ async def analyze_resume_and_jd(resume: UploadFile = File(...), jd: UploadFile =
                 for idx, fb in enumerate(feedback)
             ]
 
-            print("\n✅ DEBUG: Final Response:")
+            print("\nDEBUG: Final Response:")
             print(json.dumps({
                 "score": score,
                 "feedback": formatted_feedback
             }, indent=2))
+
+            log_step("Process completed successfully.")
 
             return {
                 "score": score,
@@ -164,7 +199,7 @@ async def analyze_resume_and_jd(resume: UploadFile = File(...), jd: UploadFile =
             }
 
         except Exception as e:
-            print(f"\n❌ DEBUG: Error formatting response: {str(e)}")
+            log_step(f"❌ Error: {str(e)}")
             return {"error": f"Error formatting analysis results: {str(e)}"}, 400
     except Exception as e:
         return {"error": str(e)}, 400
@@ -188,10 +223,6 @@ async def generate_resume(feedbacks: str=Form(...), resume: UploadFile = File(..
         resume_content = resume_parser.extract_text(await resume.read())
         jd_content = jd_parser.extract_text(await jd.read())
 
-        print("\n📄 DEBUG: Extracted Resume Content:")
-        print(resume_content)
-        print("\n📄 DEBUG: Extracted JD Content:")
-        print(jd_content)
         print("\n✅ DEBUG: Accepted Feedbacks:")
         print(json.dumps(accepted_feedbacks, indent=2))
 
@@ -208,3 +239,9 @@ async def generate_resume(feedbacks: str=Form(...), resume: UploadFile = File(..
     except Exception as e:
         print(f"\n❌ DEBUG: Error generating resume: {str(e)}")
         return {"error": str(e)}, 400
+
+@app.get("/logs")
+async def get_process_logs():
+    """Returns the logs of the ongoing/last analysis process."""
+    # print("get_process_logs ",process_logs)
+    return {"logs": process_logs}

@@ -15,7 +15,7 @@ resume_gen_agent = Agent(
     goal='Generate an optimized resume based on accepted feedback and job requirements.',
     backstory='''You are an expert resume writer who specializes in tailoring resumes to match job descriptions.
     You understand how to highlight relevant skills and experiences while maintaining authenticity.''',
-    verbose=True,
+    verbose=False,
     memory=True,
     llm=f"azure/{deployment_name}"
 )

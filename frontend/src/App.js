@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import axios from "axios";
 import "./App.css";
+import LogDisplay from "./components/LogDisplay";
 
 const App = () => {
   const [feedbacks, setFeedbacks] = useState([]);
@@ -13,6 +14,7 @@ const App = () => {
   const [isJDUploaded, setIsJDUploaded] = useState(false);
   const [resume, setResume] = useState(null);
   const [jd, setJD] = useState(null);
+
 
   const handleFeedback = (id, accepted) => {
     setFeedbacks((prevFeedbacks) =>
@@ -68,6 +70,7 @@ const App = () => {
   const handleUploadClick = async () => {
     if (isResumeUploaded && isJDUploaded) {
       setIsLoadingFeedback(true);
+      // setLogs([]);
 
       const formData = new FormData();
       formData.append("resume", resume);
@@ -129,8 +132,8 @@ const App = () => {
         </div>
       )}
 
-      {/* Loading Indicator */}
-      {isLoadingFeedback && <p className="loading-feedback">Analyzing resume and JD...</p>}
+    {/*  <LogDisplay isAnalyzing={isLoadingFeedback} />*/}
+      <LogDisplay isAnalyzing={true}/>
 
       {/* Display Score */}
       {score !== null && <p className="score">Score: {score}%</p>}

@@ -12,7 +12,7 @@ analysis_agent = Agent(
     role='Skill Alignment Analyst',
     goal='Analyze use cases to assess how well a candidate’s skills align with job requirements.',
     backstory='You help candidates improve their resumes by evaluating how their skills align with job requirements.',
-    verbose=True,
+    verbose=False,
     memory=True,
     allow_delegation=True,
     llm=f"azure/{deployment_name}"
@@ -27,6 +27,7 @@ def create_analysis_task(skills, use_cases):
             f"Here's a list of skills that were mismatched : {skills["missing_skills"]}\n"
             f"Analyze the matched skills and the degree of similarity between the mismatched skills to generate a score between 0-100."
             f"Look carefully at the mismatched skills to determine if the candidate's current skills are similar to any of the Job Description(JD) skills and return them as feedback asking the user to upgrade user's skill to the one mentioned in Job Description.\n"
+            f"If no similarities at all found ask the user to learn the top 3 required skills in the Job Description"
             f"Generate a DICTIONARY(NO EXTRA SENTENCES) with score from 0-100 based on the skill alignment and return feedback ONLY IF some skills are similar between the ones mismatched based on the use case mapping suggesting for upgrades.\n\n"
             f"IMPORTANT: Return ONLY a valid JSON object with exactly this structure:\n"
             f'''{{
@@ -36,7 +37,7 @@ def create_analysis_task(skills, use_cases):
                 ]
             }}'''
             f"\n\nExample output:\n"
-            '''{"score":10,"feedback": ["Upgrade your skill in 'GoLang' as it will help you in 'Building scalable microservices', 'Efficient concurrency handling', and 'Developing cloud-native applications'","Learn 'TypeScript'. It adds to 'Enhancing JavaScript code with static typing', 'Developing Large-scale, maintainable applications', and 'Improving code reliability and refactoring efficiency'"]}'''
+            '''{"score":10,"feedback": ["Upgrade your skill in 'JavaScript' to 'TypeScript'. It adds to 'Enhancing JavaScript code with static typing', 'Developing Large-scale, maintainable applications', and 'Improving code reliability and refactoring efficiency'"]}'''
         ),
         expected_output="A JSON object with 'score' (integer) and 'feedback' (array of strings) keys, NO EXTRA content before or after",
         agent=analysis_agent

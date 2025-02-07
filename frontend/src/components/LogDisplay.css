@@ -1,0 +1,83 @@
+.log-display {
+  margin: 20px 0;
+  padding: 20px;
+  border-radius: 8px;
+  background-color: #f5f5f5;
+}
+
+.steps-container {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.step-item {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 15px;
+  background-color: white;
+  border-radius: 6px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.step-item.loading {
+  background-color: #fff8e1;
+}
+
+.step-item.completed {
+  background-color: #f1f8e9;
+}
+
+.step-icon {
+  font-size: 1.2em;
+  min-width: 24px;
+}
+
+.step-content {
+  flex: 1;
+}
+
+.step-name {
+  font-weight: 500;
+}
+
+.analysis-results {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.results-section {
+  background-color: white;
+  padding: 20px;
+  border-radius: 6px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.results-section h4 {
+  margin: 0 0 15px 0;
+  color: #333;
+}
+
+.result-data {
+  margin: 0;
+  padding: 15px;
+  background-color: #f8f8f8;
+  border-radius: 4px;
+  font-family: monospace;
+  white-space: pre-wrap;
+  font-size: 0.9em;
+  color: #333;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.loading .step-icon {
+  display: inline-block;
+  animation: spin 2s linear infinite;
+}

@@ -42,7 +42,7 @@ comparison_agent = Agent(
     role='Resume-JD Comparison Expert',
     goal='Identify technical skill gaps between a resume and a job description.',
     backstory='You specialize in comparing resumes with job descriptions to detect skill mismatches.',
-    verbose=True,
+    verbose=False,
     memory=True,
     llm= f"azure/{deployment_name}"
 )
