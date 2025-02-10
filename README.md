@@ -7,8 +7,10 @@ A multi-agent system designed to automate the process of tailoring resumes to ma
 ## Table of Contents
 
 - [Overview](#overview)
+- [Commands to Run](#commands-to-run)
 - [Features](#features)
 - [How It Works](#how-it-works)
+  
 
 ---
 
@@ -22,7 +24,20 @@ Job seekers often need to manually adjust their resumes to align with specific j
 - **Generating a final, formatted resume** in .md format that emphasizes the most relevant qualifications and projects for the targeted job.
 
 ---
+## Commands to Run 
+- To run the **Backend**
+   ```bash
+   cd backend_fast
+   uvicorn app.main:app --reload
+   ```
 
+- To run the **Frontend**
+  ```bash
+  cd frontend
+  npm start
+  ```
+
+---
 ## Features
 
 - **PDF Parsing:** Converts extracted text from the pdfs into a structured JSON format that includes sections such as qualifications and skills (both technical and behavioral).
