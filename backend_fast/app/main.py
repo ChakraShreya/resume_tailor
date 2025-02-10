@@ -13,6 +13,7 @@ from .agents.resume_gen_agent import create_resume_gen_task, resume_gen_agent, p
 import re
 import asyncio
 from crewai import Crew
+import asyncio
 
 from fastapi.responses import StreamingResponse
 from asyncio import Queue
@@ -30,8 +31,8 @@ process_logs = []
 def log_step(step: str):
     global process_logs
     process_logs.append(step)
-    # print(f"🔄 log_step: {step}")
-    # print("log_step ",process_logs)
+    print(f"🔄 log_step: {step}")
+    print("log_step ",process_logs)
 
 
 feedback_store=[]
@@ -53,7 +54,7 @@ async def analyze_resume_and_jd(resume: UploadFile = File(...), jd: UploadFile =
     process_logs = []
     try:
         # Step 1: Parse resume and JD
-        log_step("Parsing")
+        log_step("parsing")
 
         resume_parser = ParserFactory.get_parser("resume")
         jd_parser = ParserFactory.get_parser("jd")
@@ -64,9 +65,10 @@ async def analyze_resume_and_jd(resume: UploadFile = File(...), jd: UploadFile =
 
         jd_content = await jd.read()
         jd_json = await jd_parser.parse_to_json(jd_content)
-
-        log_step("Parsing complete")
         print(jd_json)
+
+        log_step(f"Parsing complete - Resume: {json.dumps(resume_json)}")
+        log_step(f"Parsing complete - JD: {json.dumps(jd_json)}")
 
         log_step("Creating comparison task")
         comparison_task = create_comparison_task(resume_json, jd_json)
@@ -89,7 +91,7 @@ async def analyze_resume_and_jd(resume: UploadFile = File(...), jd: UploadFile =
         print("\n\n\n\n")
 
         comparison_result=json.loads(comparison_result.raw)
-        log_step("Comparison completed")
+        log_step(f"Comparison completed - Results: {json.dumps(comparison_result)}")
         print("comparison result: ",json.dumps(comparison_result, indent=4))
 
         #save serper
@@ -97,7 +99,7 @@ async def analyze_resume_and_jd(resume: UploadFile = File(...), jd: UploadFile =
 
         # Step 2: Research missing skills
         missing_skills_list = comparison_result.get('missing_skills', {}).get('resume',[]) + comparison_result.get('missing_skills', {}).get('jd',[])
-        log_step(f"Identified mismatched skills: {comparison_result.get('missing_skills', {})}")
+        log_step(f"missing_skills: {comparison_result.get('missing_skills', {})}")
         print(f"\n🔍 DEBUG: Missing Skills: {missing_skills_list}")
         # missing_skills_list= None #save serper
         if missing_skills_list:
@@ -108,41 +110,39 @@ async def analyze_resume_and_jd(resume: UploadFile = File(...), jd: UploadFile =
                 tasks=[research_task],
                 async_mode=True
             )
-            # use_cases = await research_crew.kickoff_async()
-            # use_cases=json.loads(use_cases.raw)
+            use_cases = await research_crew.kickoff_async()
+            use_cases=json.loads(use_cases.raw)
 
             # save serper
-            use_cases={
-                "javascript": [
-                    "Used for website front-end development.",
-                    "Applied in creating in-browser games.",
-                    "Implemented on NodeJS for backend web frameworks."
-                ],
-                "Git": [
-                    "Utilized for managing multiple branches with diverging codebases.",
-                    "Used to track and manage changes to source code and text files.",
-                    "Allows teams to work together using the same files."
-                ],
-                "Docker": [
-                    "Used for creating a consistent environment for deploying applications.",
-                    "Employed for faster configuration with consistency.",
-                    "Used for better disaster recovery."
-                ],
-                "typescript": [
-                    "Utilized for backend web development.",
-                    "Used in mobile applications development.",
-                    "Implemented in library or framework development to provide clear interfaces."
-                ],
-                "GoLang": [
-                    "Used for cross-platform desktop apps development.",
-                    "Implemented for low-level networking.",
-                    "Applied in server-side apps and in various web services."
-                ]
-            }
+            # use_cases={
+            #     "javascript": [
+            #         "Used for website front-end development.",
+            #         "Applied in creating in-browser games.",
+            #         "Implemented on NodeJS for backend web frameworks."
+            #     ],
+            #     "Git": [
+            #         "Utilized for managing multiple branches with diverging codebases.",
+            #         "Used to track and manage changes to source code and text files.",
+            #         "Allows teams to work together using the same files."
+            #     ],
+            #     "Docker": [
+            #         "Used for creating a consistent environment for deploying applications.",
+            #         "Employed for faster configuration with consistency.",
+            #         "Used for better disaster recovery."
+            #     ],
+            #     "typescript": [
+            #         "Utilized for backend web development.",
+            #         "Used in mobile applications development.",
+            #         "Implemented in library or framework development to provide clear interfaces."
+            #     ],
+            #     "GoLang": [
+            #         "Used for cross-platform desktop apps development.",
+            #         "Implemented for low-level networking.",
+            #         "Applied in server-side apps and in various web services."
+            #     ]
+            # }
 
-            log_step("Research completed")
-            log_step(f"Use Cases : {use_cases}")
-            print(json.dumps(use_cases, indent=2))
+            log_step(f"Research completed - Use Cases: {json.dumps(use_cases)}")
         else:
             use_cases = {}
             log_step("No missing skills to research")
@@ -160,10 +160,6 @@ async def analyze_resume_and_jd(resume: UploadFile = File(...), jd: UploadFile =
         log_step("Running analysis agent")
         analysis_result = await analysis_crew.kickoff_async()
         analysis_result=analysis_result.raw
-
-        print("\n\n\n\n")
-        print(analysis_result)
-        print("\n\n\n\n")
 
         analysis_result=re.search(r'\{.*\}', analysis_result, re.DOTALL)
         if analysis_result:
@@ -243,5 +239,5 @@ async def generate_resume(feedbacks: str=Form(...), resume: UploadFile = File(..
 @app.get("/logs")
 async def get_process_logs():
     """Returns the logs of the ongoing/last analysis process."""
-    # print("get_process_logs ",process_logs)
+    print("get_process_logs ",process_logs)
     return {"logs": process_logs}

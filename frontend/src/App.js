@@ -132,8 +132,8 @@ const App = () => {
         </div>
       )}
 
-    {/*  <LogDisplay isAnalyzing={isLoadingFeedback} />*/}
-      <LogDisplay isAnalyzing={true}/>
+      <LogDisplay isAnalyzing={isLoadingFeedback} />
+    {/*  <LogDisplay isAnalyzing={true}/>*/}
 
       {/* Display Score */}
       {score !== null && <p className="score">Score: {score}%</p>}

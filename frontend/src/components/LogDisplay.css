@@ -81,3 +81,86 @@
   display: inline-block;
   animation: spin 2s linear infinite;
 }
+
+
+.step-header {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  width: 100%;
+  padding: 10px;
+  cursor: pointer;
+}
+
+.step-header.clickable:hover {
+  background-color: rgba(0, 0, 0, 0.02);
+}
+
+.expand-icon {
+  margin-left: auto;
+  font-size: 12px;
+  color: #666;
+}
+
+.step-details {
+  margin-top: 10px;
+  padding: 15px;
+  background-color: #f8f9fa;
+  border-radius: 4px;
+}
+
+.step-details pre {
+  background-color: white;
+  padding: 10px;
+  border-radius: 4px;
+  overflow-x: auto;
+  font-size: 13px;
+  margin: 10px 0;
+  border: 1px solid #eee;
+}
+
+.step-details h5 {
+  margin: 10px 0;
+  color: #333;
+  font-size: 14px;
+}
+
+.parsed-data, .skills-comparison, .use-cases {
+  margin-bottom: 15px;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 0;
+}
+
+.section-header.clickable {
+  cursor: pointer;
+}
+
+.section-header.clickable:hover {
+  opacity: 0.8;
+}
+
+.section-header h4 {
+  margin: 0;
+}
+
+.results-section {
+  background-color: white;
+  padding: 20px;
+  border-radius: 6px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+}
+
+.expand-icon {
+  font-size: 12px;
+  color: #666;
+}
+
+.parsed-documents-grid {
+  margin-top: 15px;
+}
